@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加密货币资产管理</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- 页面头部 -->
+        <header class="header">
+            <h1>💰 加密货币资产管理</h1>
+            <p class="subtitle">管理您的多链加密货币资产</p>
+        </header>
+
+        <!-- 资产汇总卡片 -->
+        <section class="summary-section">
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon">💎</div>
+                    <div class="card-content">
+                        <h3>总资产价值</h3>
+                        <p class="total-value" id="totalValue">$0.00</p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-content">
+                        <h3>资产数量</h3>
+                        <p class="total-count" id="totalCount">0</p>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">🔗</div>
+                    <div class="card-content">
+                        <h3>支持链数</h3>
+                        <p class="chain-count" id="chainCount">8</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 添加资产表单 -->
+        <section class="add-asset-section">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>📝 添加新资产</h2>
+                    <div class="section-description">添加新的加密货币资产到您的投资组合</div>
+                </div>
+                
+                <div class="form-container">
+                <!-- 添加表单 -->
+                <form id="addAssetForm" class="asset-form">
+                    <!-- 第一行 - 基本信息 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="address">钱包地址 *</label>
+                            <input 
+                                type="text" 
+                                id="address" 
+                                name="address" 
+                                placeholder="0x... 或其他格式地址"
+                                required
+                            >
+                            <small class="form-help">支持 Ethereum、Solana、Bitcoin 等地址格式</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="chainName">区块链</label>
+                            <select id="chainName" name="chainName" required>
+                                <option value="">选择区块链</option>
+                                <option value="ethereum">Ethereum</option>
+                                <option value="arbitrum">Arbitrum One</option>
+                                <option value="base">Base</option>
+                                <option value="polygon">Polygon</option>
+                                <option value="bsc">BNB Smart Chain</option>
+                                <option value="solana">Solana</option>
+                                <option value="sui">Sui</option>
+                                <option value="bitcoin">Bitcoin</option>
+                            </select>
+                            <small class="form-help">选择资产所在的区块链</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tokenSelect">选择代币</label>
+                            <div class="token-select-container">
+                                <select 
+                                    id="tokenSelect" 
+                                    name="tokenSelect" 
+                                    required
+                                >
+                                    <option value="">请选择代币...</option>
+                                    <!-- 动态加载代币选项 -->
+                                </select>
+                                <button type="button" id="refreshTokensBtn" class="btn btn-secondary btn-small">
+                                    🔄 刷新
+                                </button>
+                            </div>
+                            <small class="form-help">从代币库中选择要添加的代币</small>
+                        </div>
+                    </div>
+
+                    <!-- 第二行 - 合约地址和标签 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tokenContract">代币合约地址</label>
+                            <input 
+                                type="text" 
+                                id="tokenContract" 
+                                name="tokenContract" 
+                                placeholder="选择代币后自动填充"
+                                readonly
+                            >
+                            <small class="form-help">根据选择的代币自动填充，原生代币为空</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="walletName">钱包名称</label>
+                            <div class="wallet-input-container">
+                                <input 
+                                    type="text" 
+                                    id="walletName" 
+                                    name="walletName" 
+                                    placeholder="输入钱包名称或从下拉选择"
+                                    list="existingWallets"
+                                >
+                                <datalist id="existingWallets">
+                                    <!-- 动态加载现有钱包名称 -->
+                                </datalist>
+                            </div>
+                            <small class="form-help">可选，用于标识不同的钱包</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assetNotes">备注</label>
+                            <textarea 
+                                id="assetNotes" 
+                                name="assetNotes" 
+                                placeholder="输入备注信息"
+                                rows="2"
+                                maxlength="200"
+                            ></textarea>
+                            <small class="form-help">可选，最多200个字符</small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="addAssetBtn">
+                        <span class="btn-text">添加资产</span>
+                        <span class="btn-loading" style="display: none;">添加中...</span>
+                    </button>
+                </form>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- 资产列表 -->
+        <section class="assets-section">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>📈 我的资产</h2>
+                    <div class="section-description">查看和管理您的加密货币资产</div>
+                    <div class="header-controls">
+                        <button id="selectModeBtn" class="btn btn-secondary">批量选择</button>
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-view="table">表格视图</button>
+                            <button class="view-btn" data-view="cards">卡片视图</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 筛选控制面板 -->
+                <div class="assets-filter-panel">
+                    <div class="filter-controls-row">
+                        <div class="filter-group">
+                            <label for="chainFilter">按链筛选</label>
+                            <select id="chainFilter">
+                                <option value="">所有链</option>
+                                <option value="ethereum">Ethereum</option>
+                                <option value="arbitrum">Arbitrum One</option>
+                                <option value="base">Base</option>
+                                <option value="polygon">Polygon</option>
+                                <option value="bsc">BNB Smart Chain</option>
+                                <option value="solana">Solana</option>
+                                <option value="sui">Sui</option>
+                                <option value="bitcoin">Bitcoin</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="addressFilter">按地址筛选</label>
+                            <input type="text" id="addressFilter" placeholder="输入地址筛选">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="walletNameFilter">按钱包名称筛选</label>
+                            <select id="walletNameFilter">
+                                <option value="">所有钱包</option>
+                                <!-- 动态加载钱包名称选项 -->
+                            </select>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button class="btn btn-primary" id="refreshPricesBtn" title="刷新价格和数据">
+                                <span class="btn-icon">💰</span>
+                                <span class="btn-text">刷新价格</span>
+                                <span class="btn-loading" style="display: none;">刷新中...</span>
+                            </button>
+                            <button class="btn btn-secondary" id="clearFiltersBtn" title="清除所有筛选条件">
+                                <span class="btn-icon">🗑️</span>
+                                <span class="btn-text">清除筛选</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 批量操作面板 -->
+                <div id="batchActionsPanel" class="batch-actions-panel" style="display: none;">
+                    <div class="batch-info">
+                        <span>已选择 <span id="selectedCount">0</span> 个资产</span>
+                    </div>
+                    <div class="batch-buttons">
+                        <button id="selectAllBtn" class="btn-secondary">全选</button>
+                        <button id="batchEditBtn" class="btn-primary" disabled>批量编辑</button>
+                        <button id="batchDeleteBtn" class="btn-danger" disabled>批量删除</button>
+                        <button id="cancelSelectBtn" class="btn-secondary">取消</button>
+                    </div>
+                </div>
+
+                <!-- 加载状态 -->
+                <div class="loading" id="assetsLoading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>正在加载资产数据...</p>
+                </div>
+
+                <!-- 空状态 -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-icon">📭</div>
+                    <h3>暂无资产数据</h3>
+                    <p>添加您的第一个资产开始管理</p>
+                </div>
+
+                <!-- 表格视图 -->
+                <div class="table-view" id="tableView">
+                    <div class="table-container">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>地址</th>
+                                    <th>区块链</th>
+                                    <th>代币</th>
+                                    <th>钱包</th>
+                                    <th>数量</th>
+                                    <th>价格 (USD)</th>
+                                    <th>价值 (USD)</th>
+                                    <th>备注</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assetsTableBody">
+                                <!-- 动态生成的资产行 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 卡片视图 -->
+                <div class="cards-view" id="cardsView" style="display: none;">
+                    <div class="assets-grid" id="assetsGrid">
+                        <!-- 动态生成的资产卡片 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 资产统计图表区域 -->
+        <section class="chart-section" id="chartSection">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>📊 资产统计</h2>
+                    <div class="section-description">可视化分析您的资产分布和趋势</div>
+                    <div class="chart-controls">
+                        <div class="chart-actions-group">
+                            <button class="btn btn-secondary chart-toggle-btn" id="toggleChartsBtn">
+                                <span class="toggle-text">显示图表</span>
+                                <span class="toggle-icon">📊</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 图表内容区域 -->
+                <div class="charts-container" id="chartsContainer" style="display: none;">
+                    <!-- 资产分布饼状图 -->
+                    <div class="chart-section distribution-chart">
+                        <div class="chart-header">
+                            <h3>📊 资产分布</h3>
+                            <div class="chart-description">按选定维度显示资产价值分布</div>
+                            <div class="chart-type-selector">
+                                <label for="chartType">统计维度:</label>
+                                <select id="chartType">
+                                    <option value="address">按地址分布</option>
+                                    <option value="chain">按区块链分布</option>
+                                    <option value="token">按代币分布</option>
+                                    <option value="wallet">按钱包分布</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-content" id="distributionChartContent">
+                            <div class="chart-wrapper">
+                                <div class="chart-canvas-container">
+                                    <canvas id="distributionChart" width="400" height="400"></canvas>
+                                </div>
+                                <div class="chart-legend" id="distributionChartLegend">
+                                    <!-- 图表图例将在这里动态生成 -->
+                                </div>
+                            </div>
+                            <div class="chart-stats" id="distributionChartStats">
+                                <!-- 统计信息将在这里显示 -->
+                            </div>
+                        </div>
+                        <!-- 空状态 -->
+                        <div class="chart-empty-state" id="distributionChartEmptyState" style="display: none;">
+                            <div class="empty-icon">📊</div>
+                            <h3>暂无数据</h3>
+                            <p>添加资产后即可查看分布图表</p>
+                        </div>
+                    </div>
+
+                    <!-- 资产趋势折线图 -->
+                    <div class="chart-section trend-chart">
+                        <div class="chart-header">
+                            <h3>📈 资产趋势</h3>
+                            <div class="chart-description">显示资产价值随时间的变化趋势</div>
+                        </div>
+                        <div class="chart-content" id="trendChartContent">
+                            <!-- 统计维度和控制面板 - 一行显示 -->
+                            <div class="trend-chart-controls-inline">
+                                <!-- 统计维度选择器组 -->
+                                <div class="dimension-selectors">
+                                    <span class="control-item">
+                                        <label for="trendChainFilter">区块链:</label>
+                                        <select id="trendChainFilter">
+                                            <option value="">全部区块链</option>
+                                            <option value="ethereum">Ethereum</option>
+                                            <option value="arbitrum">Arbitrum One</option>
+                                            <option value="base">Base</option>
+                                            <option value="polygon">Polygon</option>
+                                            <option value="bsc">BNB Smart Chain</option>
+                                            <option value="solana">Solana</option>
+                                            <option value="sui">Sui</option>
+                                            <option value="bitcoin">Bitcoin</option>
+                                        </select>
+                                    </span>
+                                    <span class="control-item">
+                                        <label for="trendAddressFilter">地址:</label>
+                                        <select id="trendAddressFilter">
+                                            <option value="">全部地址</option>
+                                            <!-- 动态加载地址选项 -->
+                                        </select>
+                                    </span>
+                                    <span class="control-item">
+                                        <label for="trendTokenFilter">代币:</label>
+                                        <select id="trendTokenFilter">
+                                            <option value="">全部代币</option>
+                                            <!-- 动态加载代币选项 -->
+                                        </select>
+                                    </span>
+                                </div>
+                                
+                                <span class="control-separator">|</span>
+                                
+                                <!-- 时间控制器组 -->
+                                <div class="time-controls">
+                                    <span class="control-item">
+                                        <label for="timeRange">时间范围:</label>
+                                        <select id="timeRange">
+                                            <option value="7d">7天</option>
+                                            <option value="30d" selected>30天</option>
+                                            <option value="90d">90天</option>
+                                            <option value="1y">1年</option>
+                                            <option value="all">全部</option>
+                                        </select>
+                                    </span>
+                                    <span class="control-item">
+                                        <label for="dataInterval">间隔:</label>
+                                        <select id="dataInterval">
+                                            <option value="1h">1小时</option>
+                                            <option value="1d" selected>1天</option>
+                                            <option value="1w">1周</option>
+                                            <option value="1m">1月</option>
+                                        </select>
+                                    </span>
+                                </div>
+                                
+                                <span class="control-separator">|</span>
+                                
+                                <!-- 操作按钮组 -->
+                                <div class="control-actions">
+                                    <button id="refreshTrendChart" class="btn-compact" title="刷新图表">
+                                        🔄 刷新
+                                    </button>
+                                    <button id="exportTrendChart" class="btn-compact" title="导出图表">
+                                        📥 导出
+                                    </button>
+                                </div>
+                            </div>
+                        <div class="chart-content" id="trendChartContent">
+                            <div class="trend-chart-wrapper">
+                                <canvas id="trendChart" width="800" height="400"></canvas>
+                            </div>
+                        </div>
+                        <!-- 空状态 -->
+                        <div class="chart-empty-state" id="trendChartEmptyState" style="display: none;">
+                            <div class="empty-icon">📈</div>
+                            <h3>暂无历史数据</h3>
+                            <p>添加资产后系统将开始记录历史数据</p>
+                            <div class="empty-actions">
+                                <button class="btn-primary" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                                    ➕ 添加第一个资产
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据库管理区域 -->
+        <section class="database-management-section" id="databaseManagementSection">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>🗄️ 数据库管理</h2>
+                    <div class="section-description">管理和维护您的数据库</div>
+                    <div class="management-toggle">
+                        <button class="btn btn-secondary" id="toggleManagementBtn">
+                            <span class="toggle-text">显示管理面板</span>
+                            <span class="toggle-icon">⚙️</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="management-content" id="managementContent" style="display: none;">
+                    <div class="management-warning">
+                        <div class="warning-icon">⚠️</div>
+                        <div class="warning-text">
+                            <h3>危险操作区域</h3>
+                            <p>以下操作将永久删除数据，请谨慎操作！</p>
+                        </div>
+                    </div>
+                    
+                    <div class="management-actions">
+                        <div class="action-card">
+                            <div class="action-header">
+                                <div class="action-icon">🗑️</div>
+                                <div class="action-info">
+                                    <h3>清空所有数据</h3>
+                                    <p>删除所有资产、钱包、代币、历史记录等数据</p>
+                                </div>
+                            </div>
+                            <div class="action-details">
+                                <ul>
+                                    <li>所有资产记录</li>
+                                    <li>所有钱包信息</li>
+                                    <li>所有代币信息</li>
+                                    <li>所有历史快照</li>
+                                    <li>所有价格缓存</li>
+                                </ul>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn-danger" id="clearAllDataBtn">
+                                    <span class="btn-text">🗑️ 清空所有数据</span>
+                                    <span class="btn-loading" style="display: none;">清空中...</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="action-card">
+                            <div class="action-header">
+                                <div class="action-icon">🔄</div>
+                                <div class="action-info">
+                                    <h3>重置数据库</h3>
+                                    <p>清空所有数据并重新初始化数据库结构</p>
+                                </div>
+                            </div>
+                            <div class="action-details">
+                                <ul>
+                                    <li>清空所有数据</li>
+                                    <li>重新初始化表结构</li>
+                                    <li>恢复默认配置</li>
+                                    <li>重置自增ID序列</li>
+                                </ul>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn-danger" id="resetDatabaseBtn">
+                                    <span class="btn-text">🔄 重置数据库</span>
+                                    <span class="btn-loading" style="display: none;">重置中...</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据库统计信息 -->
+                    <div class="database-stats" id="databaseStats">
+                        <h3>📊 数据库统计</h3>
+                        <div class="stats-grid" id="statsGrid">
+                            <!-- 动态加载统计信息 -->
+                        </div>
+                        <div class="stats-actions">
+                            <button class="btn-secondary" id="refreshStatsBtn">
+                                🔄 刷新统计
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 代币管理 -->
+        <section class="token-library-section" id="tokenLibrarySection">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>🪙 代币管理</h2>
+                    <div class="section-description">管理和配置支持的代币列表</div>
+                    <div class="management-toggle">
+                        <button class="btn btn-secondary" id="toggleTokenLibraryBtn">
+                            <span class="toggle-text">展开代币库</span>
+                            <span class="toggle-icon">📚</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 代币管理面板 -->
+                <div class="token-library-content" id="tokenLibraryContent" style="display: none;">
+                    <!-- 添加代币表单 -->
+                    <div class="add-token-section">
+                        <div class="form-container">
+                            <div class="add-token-header">
+                                <h3>🆕 添加自定义代币</h3>
+                                <p class="add-token-description">快速添加您需要的代币到资产库中</p>
+                            </div>
+                            <form id="addTokenForm" class="token-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="tokenChainName">区块链</label>
+                                        <select id="tokenChainName" name="chainName" required>
+                                            <option value="">选择区块链</option>
+                                            <option value="ethereum">Ethereum</option>
+                                            <option value="arbitrum">Arbitrum One</option>
+                                            <option value="base">Base</option>
+                                            <option value="polygon">Polygon</option>
+                                            <option value="bsc">BNB Smart Chain</option>
+                                            <option value="solana">Solana</option>
+                                            <option value="sui">Sui</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tokenSymbolInput">代币符号</label>
+                                        <input 
+                                            type="text" 
+                                            id="tokenSymbolInput" 
+                                            name="symbol" 
+                                            placeholder="如: USDT, DAI"
+                                            required
+                                            maxlength="10"
+                                            readonly
+                                        >
+                                        <small class="form-help">代币符号不可修改</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tokenNameInput">代币名称 *</label>
+                                        <input 
+                                            type="text" 
+                                            id="tokenNameInput" 
+                                            name="name" 
+                                            placeholder="如: Tether USD"
+                                            required
+                                        >
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="tokenDecimalsInput">小数位数</label>
+                                        <input 
+                                            type="number" 
+                                            id="tokenDecimalsInput" 
+                                            name="decimals" 
+                                            placeholder="18"
+                                            min="0"
+                                            max="36"
+                                            value="18"
+                                        >
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tokenContractInput">合约地址</label>
+                                        <input 
+                                            type="text" 
+                                            id="tokenContractInput" 
+                                            name="contractAddress" 
+                                            placeholder="0x... (原生代币可留空)"
+                                        >
+                                        <small class="form-help">ERC20/BEP20 等合约代币需要填写</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tokenCoingeckoIdInput">CoinGecko ID</label>
+                                        <input 
+                                            type="text" 
+                                            id="tokenCoingeckoIdInput" 
+                                            name="coingeckoId" 
+                                            placeholder="tether"
+                                        >
+                                        <small class="form-help">用于获取价格数据（可选）</small>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="button" id="validateTokenBtn" class="btn btn-secondary">
+                                        <span class="btn-text">🔍 验证合约</span>
+                                        <span class="btn-loading" style="display: none;">⏳</span>
+                                    </button>
+                                    <button type="submit" id="addTokenBtn" class="btn btn-primary">
+                                        <span class="btn-text">➕ 添加代币</span>
+                                        <span class="btn-loading" style="display: none;">⏳</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 代币列表 -->
+                    <div class="token-list-section">
+                        <div class="token-list-header">
+                            <h3>📋 代币库列表</h3>
+                            <div class="token-list-controls">
+                                <div class="filter-group">
+                                    <select id="tokenListChainFilter">
+                                        <option value="">所有区块链</option>
+                                        <option value="ethereum">Ethereum</option>
+                                        <option value="arbitrum">Arbitrum One</option>
+                                        <option value="base">Base</option>
+                                        <option value="polygon">Polygon</option>
+                                        <option value="bsc">BNB Smart Chain</option>
+                                        <option value="solana">Solana</option>
+                                        <option value="sui">Sui</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <select id="tokenListTypeFilter">
+                                        <option value="">所有类型</option>
+                                        <option value="predefined">预定义</option>
+                                        <option value="custom">自定义</option>
+                                    </select>
+                                </div>
+                                <div class="search-group">
+                                    <input type="text" id="tokenSearchInput" placeholder="搜索代币..." class="search-input">
+                                </div>
+                                <button id="refreshTokenListBtn" class="btn btn-secondary">
+                                    <span class="btn-text">🔄 刷新</span>
+                                    <span class="btn-loading" style="display: none;">⏳</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 代币统计信息 -->
+                        <div class="token-stats-compact" id="tokenStats">
+                            <div class="stats-inline">
+                                <div class="stat-item-compact">
+                                    <span class="stat-label">总代币数:</span>
+                                    <span class="stat-value" id="totalTokensCount">-</span>
+                                </div>
+                                <div class="stat-separator">|</div>
+                                <div class="stat-item-compact">
+                                    <span class="stat-label">预定义:</span>
+                                    <span class="stat-value" id="predefinedTokensCount">-</span>
+                                </div>
+                                <div class="stat-separator">|</div>
+                                <div class="stat-item-compact">
+                                    <span class="stat-label">自定义:</span>
+                                    <span class="stat-value" id="customTokensCount">-</span>
+                                </div>
+                                <div class="stat-separator">|</div>
+                                <div class="stat-item-compact">
+                                    <span class="stat-label">支持链数:</span>
+                                    <span class="stat-value" id="supportedChainsCount">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 代币表格 -->
+                        <div class="token-table-container">
+                            <table class="token-table">
+                                <thead>
+                                    <tr>
+                                        <th>代币符号</th>
+                                        <th>代币名称</th>
+                                        <th>区块链</th>
+                                        <th>合约地址</th>
+                                        <th>类型</th>
+                                        <th>CoinGecko ID</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tokenTableBody">
+                                    <!-- 代币列表将在这里动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 空状态 -->
+                        <div class="token-empty-state" id="tokenEmptyState" style="display: none;">
+                            <div class="empty-icon">🪙</div>
+                            <h3>暂无代币</h3>
+                            <p>添加您的第一个自定义代币来开始管理</p>
+                        </div>
+
+                        <!-- 加载状态 -->
+                        <div class="token-loading" id="tokenLoading" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <p>正在加载代币列表...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>&copy; 2024 加密货币资产管理. 开源项目.</p>
+            <div class="footer-links">
+                <a href="#" onclick="showAbout()">关于</a>
+                <a href="#" onclick="showHelp()">帮助</a>
+                <a href="http://localhost:8010/docs" target="_blank">API 文档</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 通知容器 -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- 模态框 -->
+    <div class="modal" id="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <div class="modal-body" id="modalBody">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js 图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

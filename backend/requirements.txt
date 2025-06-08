@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+requests
+aiohttp
+pydantic-settings
+aiosqlite

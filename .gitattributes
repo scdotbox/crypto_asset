@@ -1,0 +1,40 @@
+* text=auto
+
+*.py text
+*.js text
+*.html text
+*.css text
+*.json text
+*.md text
+*.txt text
+*.yml text
+*.yaml text
+*.toml text
+*.ini text
+*.cfg text
+*.conf text
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+
+.env filter=git-crypt diff=git-crypt
+*.key filter=git-crypt diff=git-crypt
+
+*.py linguist-language=Python
+*.js linguist-language=JavaScript
+*.html linguist-language=HTML
+*.css linguist-language=CSS
+
+uv.lock linguist-generated=true
+package-lock.json linguist-generated=true
+yarn.lock linguist-generated=true 
