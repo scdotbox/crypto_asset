@@ -75,9 +75,7 @@ class Settings:
     bitquery_api_key: str = os.getenv("BITQUERY_API_KEY", "")
     mobula_api_key: str = os.getenv("MOBULA_API_KEY", "")
     moralis_api_key: str = os.getenv("MORALIS_API_KEY", "")
-    blockvision_api_key: str = os.getenv(
-        "BLOCKVISION_API_KEY", "2yAX6vvfU4QZgFNyDOcpe26TFKb"
-    )
+    blockvision_api_key: str = os.getenv("BLOCKVISION_API_KEY", "")
 
     # 数据聚合策略配置
     data_aggregator_enabled: bool = (
